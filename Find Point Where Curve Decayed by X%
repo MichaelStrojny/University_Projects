@@ -1,0 +1,86 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
+from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+file_path = # . csv
+data = pd.read_csv(file_path)
+
+x = data['Label1'].values  # replace Label1, Label1 with real label
+y = data['Label2'].values  
+
+peaks_x = x
+peaks_y = y
+
+### OPTIONAL: uncomment this to extract peaks (for oscilatory data) and use those as the y values ###
+
+# peaks_indices, _ = find_peaks(y, height=None, distance=5)  # Increased sensitivity
+# peaks_x = x[peaks_indices]
+# peaks_y = y[peaks_indices]
+
+# neural net inputs
+
+X = peaks_x,reshape(-1, 1)  # Reshape for the model input
+y = peaks_y
+
+# normalize input
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# train test
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# neural net fit 
+
+model = MLPRegressor(hidden_layer_sizes=(150, 150, 150), 
+                      activation='relu',                
+                      max_iter=20000,                  
+                      alpha=0.001,                    
+                      random_state=42,
+                      learning_rate_init=0.001,        
+                      early_stopping=True,             
+                      validation_fraction=0.1,        
+                      n_iter_no_change=50)          
+model.fit(X_train, y_train)
+
+# generate data
+
+t_t = np.linspace(min(peaks_time), max(peaks_time), 1000).reshape(-1, 1)
+t_t_d = scaler.transform(dense_time)
+pred = model.predict(t_t_d)
+
+pred[0] = y[0]    # we must we compare points on the curve with the first data point to find when the curve hits 4%
+
+### uncomment this if we are using oscilatory data ###
+# pred[0] = peaks_angle[0]
+
+# find when the curve hits 4% of y[0]
+
+initial_value = y[0]
+target_value = initial_value * 0.04
+
+target_index = np.argmin(np.abs(pred - target_value))
+intersection_x = dense_time[target_index][0]
+
+#plot
+
+plt.figure(figsize=(10, 6))
+plt.plot(peaks_x, peaks_y, 'ro', markersize=4, label=)
+plt.plot(t_t, pred, 'g-', label=, linewidth=4)
+
+# vert line where curve hits 4%
+
+plt.axvline(x=intersection_time, color='b', linestyle='--', label='4% of initial value')
+
+plt.xlabel()
+plt.ylabel()
+plt.grid(True)
+plt.show()
+
+# Print the time when the curve reaches 4% of the initial value
+print(f"Time when curve hits 4% of initial value: {intersection_time:.4f}")

@@ -1,0 +1,70 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
+from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+file_path = # columns + labels . csv
+data = pd.read_csv(file_path)
+
+time = data['label_1'].values  # replace label_1, label_2 with real labels
+angle = data['label_2'].values
+
+# peaks of oscilatory data
+
+peaks_indices, _ = find_peaks(angle, height=0, distance=20)  
+peaks_time = time[peaks_indices]
+peaks_angle = angle[peaks_indices]
+
+# error of no peaks detected
+
+if len(peaks_time) == 0:
+    raise ValueError("No peaks detected.")
+
+# prepare data for neural net
+
+X = peaks_time.reshape(-1, 1) 
+y = peaks_angle
+
+# normalize data
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# train / test sets
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# neural net
+
+model = MLPRegressor(hidden_layer_sizes=(150, 150, 150),  # 3 hidden layers / 150 neurons
+                      activation='relu',                
+                      max_iter=20000,                  
+                      alpha=0.001,                     
+                      random_state=1,
+                      learning_rate_init=0.001,        
+                      early_stopping=True,              
+                      validation_fraction=0.1, 
+                      n_iter_no_change=50)
+model.fit(X_train, y_train)
+
+# line of best fit
+
+t_t = np.linspace(min(peaks_time), max(peaks_time), 1000).reshape(-1, 1)
+t_t_scaled = scaler.transform(dense_time) #normalize
+predicted_peaks_angle = model.predict(t_t_scaled)
+
+# plot
+
+plt.figure(figsize=(10, 6))
+plt.plot(peaks_time, peaks_angle, 'ro', label='Peaks')
+plt.plot(t_t, predicted_peaks_angle, 'g-', label='Line of Best Fit', linewidth=2)
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (rad)')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+print(f"R^2 = model.score(X_test, y_test)")

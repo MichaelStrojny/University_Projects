@@ -1,0 +1,20 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
+
+file_path = ''
+data = pd.read_csv(file_path)
+time = data['t'].values
+angle = np.radians(data['θ'].values)
+
+peaks_indices, _ = find_peaks(angle, height=None, distance=5)
+peaks_time = time[peaks_indices]
+
+periods = np.diff(peaks_time)
+
+avg_period = np.mean(periods)
+uncertainty = np.std(periods, ddof=1) / np.sqrt(len(periods))
+
+print(f"Avg Period: {avg_period:.4f} s")
+print(f"Uncertainty: {uncertainty:.4f} s")
